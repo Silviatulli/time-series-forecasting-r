@@ -1,3 +1,21 @@
+#Installing relevant packages
+install.packages("ggplot2")
+install.packages("forecast")
+
+# Generate example CSV data for product_ts
+data <- data.frame(
+  Date = seq(as.Date("2020-01-01"), by = "month", length.out = 30),
+  ProductCode = rep("ABC123", 30),
+  OrderQuantity = sample(1:100, 30, replace = TRUE)
+)
+
+# Extend the data to have at least 24 data points
+extended_data <- rbind(data, data, data[1:6, ])
+
+# Write the data to a CSV file named "inventory_data.csv"
+write.csv(extended_data, file = "inventory_data.csv", row.names = FALSE)
+
+
 # Assuming your data is in a CSV file named "inventory_data.csv"
 # Load the data into a data frame
 inventory_data <- read.csv("inventory_data.csv", header = TRUE)
@@ -19,8 +37,10 @@ plot(product_data$Date, product_data$OrderQuantity, type = "l",
 # Perform seasonal decomposition of the time series
 library(ggplot2)
 library(forecast)
+
 product_ts <- ts(product_data$OrderQuantity, frequency = 12)  # Assuming monthly data with 12 periods per year
 decomposed_ts <- decompose(product_ts)
+
 autoplot(decomposed_ts)
 
 # Assuming the data shows both trend and seasonality
@@ -31,23 +51,5 @@ summary(model)
 # Split the data into training and testing sets
 train_size <- floor(0.8 * length(product_ts))
 train_data <- window(product_ts, end = train_size)
-test_data <- window(product_ts, start = train_size + 1)
 
-# Train the ARIMA model using the training data
-trained_model <- Arima(train_data, model = model)
-
-# Forecast future inventory levels
-forecast_data <- forecast(trained_model, h = length(test_data))
-
-# Evaluate the model's performance
-accuracy(forecast_data, test_data)
-
-# Assuming you want to forecast for the next 12 periods
-future_forecast <- forecast(trained_model, h = 12)
-
-# Visualize the forecasted inventory levels
-plot(future_forecast, xlab = "Date", ylab = "Order Quantity",
-     main = paste("Forecast for Product Code:", product_code))
-
-# Use the forecasted values for inventory optimization and planning
 
